@@ -5,6 +5,7 @@ After-Hours is a game project currently in early BETA development. Focusing on h
 - the goal of this game is to have a time limit (10 minutes) and for the playerrs to complete their shift
 - the CEO (Main enemy AI system) will survey the perimeter and attack any employed that are slacking
 - (we could go with choosing maybe a direct pathing for the AI or maybe just randomized pathing as long as the AI can detect walls and not get stuck)
+- Eerie Ambience: Utilize dark and claustrophobic environments, unsettling sound effects (machinery whirring, distant screams), and a haunting soundtrack.
 - This repository is being initialized to support collaborative development. Core systems, including a lobby system, will be added in future commits.
 
 # Core Gameplay
