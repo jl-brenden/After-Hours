@@ -1,6 +1,6 @@
 # After-Hours
 
-After-Hours is a game project currently in development.
+After-Hours is a game project currently in early BETA development. Focusing on horror, AI pathing, and utilizing lobby systems to make the user experience seamless.
 
 # Overview
 - the goal of this game is to have a time limit (10 minutes) and for the playerrs to complete their shift
@@ -18,5 +18,6 @@ Core systems, including a lobby system, will be added in future commits.
 - Repository initialized
 - Core systems pending
 :D
+
 
 
