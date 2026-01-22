@@ -1,0 +1,79 @@
+local ProceduralModule = require(/moduleLocation/.ProceduralModule)
+local runService = game:GetService("RunService")
+
+local enemy = script.Parent
+local root = enemy:WaitForChild("HumanoidRootPart")
+local hum = enemy:WaitForChild("Humanoid")
+local alignOrientation = root:WaitForChild("AlignOrientation")
+
+local target = workspace:WaitForChild("Target")
+
+-- IK Targets
+local ikTargets = enemy:WaitForChild("IkTargets")
+local leftFront_IkTarget = ikTargets:WaitForChild("LeftFront_IkTarget")
+local leftBack_IkTarget = ikTargets:WaitForChild("LeftBack_IkTarget")
+local rightFront_IkTarget = ikTargets:WaitForChild("RightFront_IkTarget")
+local rightBack_IkTarget = ikTargets:WaitForChild("RightBack_IkTarget")
+
+-- Raycast parts
+local raycastParts = enemy:WaitForChild("RaycastParts")
+local leftFront_RaycastPart = raycastParts:WaitForChild("LeftFront_RaycastPart")
+local leftBack_RaycastPart = raycastParts:WaitForChild("LeftBack_RaycastPart")
+local rightFront_RaycastPart = raycastParts:WaitForChild("RightFront_RaycastPart")
+local rightBack_RaycastPart = raycastParts:WaitForChild("RightBack_RaycastPart")
+
+-- IK Controls
+local leftFront_IKControl = hum:WaitForChild("LeftFront_IKControl")
+local leftBack_IKControl = hum:WaitForChild("LeftBack_IKControl")
+local rightFront_IKControl = hum:WaitForChild("RightFront_IKControl")
+local rightBack_IKControl = hum:WaitForChild("RightBack_IKControl")
+
+-- Optional: assign poles
+leftFront_IKControl.Pole = root:WaitForChild("LeftFront_Pole")
+leftBack_IKControl.Pole = root:WaitForChild("LeftBack_Pole")
+rightFront_IKControl.Pole = root:WaitForChild("RightFront_Pole")
+rightBack_IKControl.Pole = root:WaitForChild("RightBack_Pole")
+
+-- Raycast params
+local rayCastParams = RaycastParams.new()
+rayCastParams.FilterDescendantsInstances = {enemy}
+rayCastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+-- Hide IK target parts
+for _, v in ipairs(ikTargets:GetChildren()) do v.Transparency = 1 end
+for _, v in ipairs(raycastParts:GetChildren()) do v.Transparency = 1 end
+
+-- Movement tuning
+local MOVE_SPEED = 2
+local ROTATE_SPEED = 6
+local STOP_DISTANCE = 2
+
+-- Heartbeat for root motion and rotation
+runService.Heartbeat:Connect(function(dt)
+	local toTarget = target.Position - root.Position
+	local distance = toTarget.Magnitude
+
+	if distance > STOP_DISTANCE then
+		-- Flatten movement
+		local direction = Vector3.new(toTarget.X, 0, toTarget.Z).Unit
+
+		-- Move root forward
+		root.CFrame += direction * MOVE_SPEED * dt
+
+		-- Rotate root to face target
+		local look = CFrame.lookAt(root.Position, root.Position + direction)
+		root.CFrame = root.CFrame:Lerp(look, dt * ROTATE_SPEED)
+	end
+end)
+
+-- Coroutine for procedural IK stepping
+coroutine.wrap(function()
+	while true do
+		ProceduralModule:IkLegStep(leftFront_IkTarget, leftFront_RaycastPart, enemy.PrimaryPart, 2, 2, 1, 0.05, rayCastParams)
+		ProceduralModule:IkLegStep(rightBack_IkTarget, rightBack_RaycastPart, enemy.PrimaryPart, 2, 2, 1, 0.05, rayCastParams)
+		task.wait(0.1)
+		ProceduralModule:IkLegStep(rightFront_IkTarget, rightFront_RaycastPart, enemy.PrimaryPart, 2, 2, 1, 0.05, rayCastParams)
+		ProceduralModule:IkLegStep(leftBack_IkTarget, leftBack_RaycastPart, enemy.PrimaryPart, 2, 2, 1, 0.05, rayCastParams)
+		task.wait(0.1)
+	end
+end)()
