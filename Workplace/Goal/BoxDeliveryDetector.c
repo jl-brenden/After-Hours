@@ -1,13 +1,23 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game : GetService("Players")
-local BoxDeliveredEvent = ReplicatedStorage : WaitForChild("BoxDeliveredEvent")
+local TruckGoal = script.Parent
+local debounce = {}
 
-local goalPart = script.Parent
+TruckGoal.Touched:Connect(function(hit)
+	if not hit:IsA("BasePart") then return end
+	if hit.Name ~= "BoxCarry" then return end
+	if debounce[hit] then return end
+	debounce[hit] = true
 
-goalPart.Touched : Connect(function(hit)
-    local player = Players:GetPlayerFromCharacter(hit.Parent)
-    if player then
-        BoxDeliveredEvent : FireServer(player)
-        hit : Destroy()
-    end
+	local owner = hit:FindFirstChild("Owner")
+	if owner and owner.Value and owner.Value : IsA("Player") then
+		local player = owner.Value
+		local stats = player : FindFirstChild("leaderstats")
+		if stats then
+			local boxes = stats : FindFirstChild("Boxes")
+			if boxes then
+				boxes.Value += 1
+			end
+		end
+	end
+	
+	hit : Destroy()
 end)
