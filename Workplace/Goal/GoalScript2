@@ -1,0 +1,52 @@
+local goal = script.Parent
+local debounce = {}
+
+local function isHumanoidPart(part)
+	if not part:IsA("BasePart") then
+		return true -- treat non-parts as safe
+	end
+	
+	if part:IsA(BoxCarry) then
+		stats.Boxes.Value += 1
+	end
+end
+
+
+goal.Touched:Connect(function(hit)
+	-- Ignore humanoid-related parts when goal is touched
+	if isHumanoidPart(hit) then return end
+
+	-- Debounce per part
+	if debounce[hit] then return end
+	debounce[hit] = true
+
+	task.wait(0.05)
+
+	if hit and hit.Parent then
+		stats.Boxes.Value += 1
+		hit:Destroy()
+	end
+end)
+
+
+local TruckGoal = script.Parent
+local debounce = {}
+
+TruckGoal.Touched:Connect(function(hit)
+	if not hit:IsA("BasePart") then return end
+	if hit.Name ~= "BoxCarry" then return end
+	if debounce[hit] then return end
+	debounce[hit] = true
+
+	-- Award the last owner
+	local owner = hit:FindFirstChild("Owner")
+	if owner and owner.Value and owner.Value:IsA("Player") then
+		local player = owner.Value
+		local stats = player:FindFirstChild("leaderstats")
+		if stats and stats:FindFirstChild("Boxes") then
+			stats.Boxes.Value += 1
+		end
+	end
+
+	hit:Destroy()
+end)
