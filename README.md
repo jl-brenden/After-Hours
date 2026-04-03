@@ -1,5 +1,5 @@
-# After-Hours
-After-Hours is a game project currently in early BETA development. Focusing on horror, collaboration, AI pathing, and utilizing lobby systems to make the user experience seamless.
+# DEADSTOCK
+DEADSTOCK is a game project currently in early BETA development. Focusing on horror, collaboration, AI pathing, and utilizing lobby systems to make the user experience seamless.
 
 # Overview
 - the goal of this game is to have a time limit (10 minutes) and for the playerrs to complete their shift
