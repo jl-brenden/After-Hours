@@ -16,5 +16,5 @@ DEADSTOCK is a game project currently in early BETA development. Focusing on hor
 - players will be able to decrease their bladder meter down to zero by interacting with a bathroom toilet
 
 # Status
-Pending UI implementation and bug fixes for AI pathfinding - WORK IN PROGRESS
+Pending UI implementation, cutscenes, and bug fixes for AI pathfinding - WORK IN PROGRESS
 
