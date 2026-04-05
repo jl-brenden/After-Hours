@@ -1,0 +1,159 @@
+local PathfindingService = game:GetService("PathfindingService")
+local Players = game:GetService("Players")
+
+local npc = script.Parent
+local humanoid = npc:WaitForChild("Humanoid")
+local root = npc:WaitForChild("HumanoidRootPart")
+
+local patrolFolder = workspace:WaitForChild("PatrolPoints")
+local patrolPoints = {
+	patrolFolder.Red,
+	patrolFolder.Blue,
+	patrolFolder.Purple,
+	patrolFolder.Green,
+	patrolFolder.Brown,
+	patrolFolder.Orange,
+	patrolFolder.Black,
+	patrolFolder.Yellow,
+}
+
+local currentIndex = 1
+
+local DETECTION_RADIUS = 50
+local ATTACK_RADIUS = 30
+
+local function updateSpeed(weight)
+	if weight <= 5 then
+		humanoid.WalkSpeed = 30
+	elseif weight <= 15 then
+		humanoid.WalkSpeed = 20
+	else
+		humanoid.WalkSpeed = 10
+	end
+end
+
+local function getClosestPlayer()
+	local closest = nil
+	local shortest = DETECTION_RADIUS
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		local char = player.Character
+		if char then
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			local hum = char:FindFirstChild("Humanoid")
+
+			if hrp and hum and hum.Health > 0 then
+				local dist = (root.Position - hrp.Position).Magnitude
+				if dist < shortest then
+					shortest = dist
+					closest = player
+				end
+			end
+		end
+	end
+
+	return closest
+end
+
+local function goToPoint(point)
+	local path = PathfindingService:CreatePath({
+		AgentRadius = 1.5,
+		AgentHeight = 5,
+		AgentCanJump = true
+	})
+
+	path:ComputeAsync(root.Position, point.Position)
+
+	if path.Status == Enum.PathStatus.Success then
+		for _, waypoint in ipairs(path:GetWaypoints()) do
+			if npc:GetAttribute("OverridePatrol") then
+				return
+			end
+
+			humanoid:MoveTo(waypoint.Position)
+			local reached = humanoid.MoveToFinished:Wait()
+
+			if not reached then
+				task.wait(0.1)
+			end
+		end
+	end
+end
+
+task.spawn(function()
+	while true do
+		if npc:GetAttribute("OverridePatrol") then
+			task.wait(0.1)
+			continue
+		end
+
+		local weight = npc:GetAttribute("Weight") or 0
+		updateSpeed(weight)
+
+		local nextPoint = patrolPoints[currentIndex]
+		goToPoint(nextPoint)
+
+		currentIndex += 1
+		if currentIndex > #patrolPoints then
+			currentIndex = 1
+		end
+
+		task.wait(0.1)
+	end
+end)
+
+task.spawn(function()
+	local waypoints = {}
+	local waypointIndex = 1
+
+	while true do
+		task.wait(0.1)
+
+		local closest = getClosestPlayer()
+
+		if closest then
+			local char = closest.Character
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			local hum = char:FindFirstChild("Humanoid")
+
+			if not hrp or not hum or hum.Health <= 0 then
+				npc:SetAttribute("OverridePatrol", false)
+				humanoid:MoveTo(root.Position)
+				continue
+			end
+
+			npc:SetAttribute("OverridePatrol", true)
+
+			local weight = npc:GetAttribute("Weight") or 0
+			updateSpeed(weight)
+
+			local path = PathfindingService:CreatePath({
+				AgentRadius = 1.5,
+				AgentHeight = 5,
+				AgentCanJump = false
+			})
+
+			path:ComputeAsync(root.Position, hrp.Position)
+
+			if path.Status == Enum.PathStatus.Success then
+				waypoints = path:GetWaypoints()
+				waypointIndex = 2
+			end
+
+			if waypoints[waypointIndex] then
+				humanoid:MoveTo(waypoints[waypointIndex].Position)
+
+				if (root.Position - waypoints[waypointIndex].Position).Magnitude < 4 then
+					waypointIndex += 1
+				end
+			end
+
+			local dist = (root.Position - hrp.Position).Magnitude
+			if dist < ATTACK_RADIUS then
+				print("CEO ATTACK")
+			end
+		else
+			npc:SetAttribute("OverridePatrol", false)
+		end
+	end
+end)
